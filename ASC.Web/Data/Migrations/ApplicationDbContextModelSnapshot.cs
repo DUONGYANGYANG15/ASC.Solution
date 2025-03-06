@@ -56,7 +56,7 @@ namespace ASC.Solution.Data.Migrations
 
                     b.HasKey("PartitionKey", "RowKey");
 
-                    b.ToTable("MasterDataKeys");
+                    b.ToTable("MasterDataKeys", (string)null);
                 });
 
             modelBuilder.Entity("ASC.Model.Models.MasterDataValue", b =>
@@ -93,7 +93,7 @@ namespace ASC.Solution.Data.Migrations
 
                     b.HasKey("PartitionKey", "RowKey");
 
-                    b.ToTable("MasterDataValues");
+                    b.ToTable("MasterDataValues", (string)null);
                 });
 
             modelBuilder.Entity("ASC.Model.Models.ServiceRequest", b =>
@@ -149,7 +149,7 @@ namespace ASC.Solution.Data.Migrations
 
                     b.HasKey("PartitionKey", "RowKey");
 
-                    b.ToTable("ServiceRequests");
+                    b.ToTable("ServiceRequests", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

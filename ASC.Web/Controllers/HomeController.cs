@@ -12,6 +12,10 @@ namespace ASC.Solution.Controllers
 
         private readonly ILogger<HomeController> _logger;
         private IOptions<ApplicationSettings> _settings;
+        public HomeController(IOptions<ApplicationSettings> settings)
+        {
+            _settings = settings;
+        }
         public HomeController(ILogger<HomeController> logger, IOptions<ApplicationSettings> settings)
         {
             _logger = logger;
@@ -24,7 +28,12 @@ namespace ASC.Solution.Controllers
             ViewBag.Title = _settings.Value.ApplicationTitle;
             return View();
         }
-
+        public IActionResult Index()
+        {
+            ViewData.Model = "Test";
+            throw new Exception("Login Fail!!!");
+            return View();
+        }
 
         public IActionResult Privacy()
         {
