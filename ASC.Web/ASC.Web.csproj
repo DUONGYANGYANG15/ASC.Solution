@@ -8,9 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="NguyenNgocTai\**" />
+    <Content Remove="NguyenNgocTai\**" />
+    <EmbeddedResource Remove="NguyenNgocTai\**" />
+    <None Remove="NguyenNgocTai\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.3.0" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="17.13.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.11">
@@ -23,10 +31,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\ThucHanh2\ASC.Solution\ASC.DataAccess\ASC.DataAccess.csproj" />
     <ProjectReference Include="..\..\..\ThucHanh2\ASC.Solution\ClassLibrary1\ASC.Model.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="NguyenNgocTai\" />
   </ItemGroup>
 
 </Project>
