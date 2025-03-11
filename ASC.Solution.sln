@@ -20,6 +20,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ASC.DataAccess", "..\..\Thu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASC.Tests", "ASC.Tests\ASC.Tests.csproj", "{9CEEB357-7CC1-45E5-B2DE-EC724E2A7A91}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helpers", "Helpers\Helpers.csproj", "{9CDDDC64-370E-4D1F-9C23-89207FFFF374}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +52,10 @@ Global
 		{9CEEB357-7CC1-45E5-B2DE-EC724E2A7A91}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9CEEB357-7CC1-45E5-B2DE-EC724E2A7A91}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9CEEB357-7CC1-45E5-B2DE-EC724E2A7A91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CDDDC64-370E-4D1F-9C23-89207FFFF374}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CDDDC64-370E-4D1F-9C23-89207FFFF374}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CDDDC64-370E-4D1F-9C23-89207FFFF374}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CDDDC64-370E-4D1F-9C23-89207FFFF374}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
