@@ -4,7 +4,6 @@ using ASC.Solution.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
-
 namespace ASC.Solution.Controllers
 {
     public class HomeController : Controller
@@ -30,10 +29,18 @@ namespace ASC.Solution.Controllers
         }
         public IActionResult Index()
         {
-            ViewData.Model = "Test";
-            throw new Exception("Login Fail!!!");
+            // Set Session
+            HttpContext.Session.SetSession("Test", _settings.Value);
+
+            // Get Session
+            var settings = HttpContext.Session.GetSession<ApplicationSettings>("Test");
+
+            // Usage of IOptions
+            ViewBag.Title = _settings.Value.ApplicationTitle;
+
             return View();
         }
+
 
         public IActionResult Privacy()
         {

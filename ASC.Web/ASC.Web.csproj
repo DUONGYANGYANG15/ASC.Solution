@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.3.0" />
@@ -26,10 +27,13 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\ThucHanh2\ASC.Solution\ASC.Business\ASC.Business.csproj" />
     <ProjectReference Include="..\..\..\ThucHanh2\ASC.Solution\ASC.DataAccess\ASC.DataAccess.csproj" />
+    <ProjectReference Include="..\..\..\ThucHanh2\ASC.Solution\ASC.Utilities\ASC.Utilities.csproj" />
     <ProjectReference Include="..\..\..\ThucHanh2\ASC.Solution\ClassLibrary1\ASC.Model.csproj" />
   </ItemGroup>
 
