@@ -8,17 +8,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="NguyenNgocTai\**" />
-    <Content Remove="NguyenNgocTai\**" />
-    <EmbeddedResource Remove="NguyenNgocTai\**" />
-    <None Remove="NguyenNgocTai\**" />
+    <Compile Remove="NguyenVietDuong\**" />
+    <Content Remove="NguyenVietDuong\**" />
+    <EmbeddedResource Remove="NguyenVietDuong\**" />
+    <None Remove="NguyenVietDuong\**" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="MailKit" Version="4.11.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.11" />
     <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.3.0" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="17.13.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.11" />
@@ -27,6 +28,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+    <PackageReference Include="MimeKit" Version="4.11.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
@@ -35,6 +37,11 @@
     <ProjectReference Include="..\..\..\ThucHanh2\ASC.Solution\ASC.DataAccess\ASC.DataAccess.csproj" />
     <ProjectReference Include="..\..\..\ThucHanh2\ASC.Solution\ASC.Utilities\ASC.Utilities.csproj" />
     <ProjectReference Include="..\..\..\ThucHanh2\ASC.Solution\ClassLibrary1\ASC.Model.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Areas\ServiceRequests\Data\" />
+    <Folder Include="Areas\ServiceRequests\Models\" />
   </ItemGroup>
 
 </Project>

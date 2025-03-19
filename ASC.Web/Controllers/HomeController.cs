@@ -7,9 +7,10 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using System.Text.Json;
 using ASC.Utilities;
+using ASC.Web.Controllers;
 namespace ASC.Solution.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : AnonymousController
     {
 
         private readonly ILogger<HomeController> _logger;
