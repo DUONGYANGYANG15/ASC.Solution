@@ -1,7 +1,12 @@
-﻿@using Microsoft.Extensions.Options;
+﻿@using ASC.Utilities
+@using ASC.Web.Data
+@using Microsoft.Extensions.Options;
 @using ASC.Solution.Configuration;
+@inject IHttpContextAccessor UserHttpContext
+@inject INavigationCacheOperations navigationCache
 @{
     Layout = "_MasterLayout";
+    var currentUser = UserHttpContext.HttpContext.User.GetCurrentUserDetails();
 }
 
 <header class="secureLayout">
@@ -23,6 +28,7 @@
                 <a href="#email"><span class="white-text email">jdandturk@gmail.com</span></a>
             </div>
         </li>
+        @await Component.InvokeAsync("ASC.Web.Navigation.LeftNavigation", await navigationCache.GetNavigationCacheAsync())
         <li>
             <a class="collapsible-header" href="#">
                 <i class="material-icons">dashboard</i>
@@ -129,3 +135,30 @@
         </div>
     </div>
 </footer>
+@RenderSection("Scripts", required: false)
+@section Scripts {
+    @RenderSection("Scripts", required: false)
+    <script type="text/javascript">
+        $(function () {
+            $('#ancrLogout').click(function () {
+                $('#logout_form').submit();
+            });
+            $('#ancrResetPassword').click(function () {
+                $('#resetPassword_form').submit();
+            });
+        });
+    </script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('.collapsible').collapsible();
+        });
+    </script>
+}
+
+@RenderSection("Scripts", required: false)
+<form class="hide" method="post" id="logout_form" asp-area="Identity" asp-page="/Account/Logout">
+    <input type="submit" value="Logout" />
+</form>
+
+<form class="hide" method="post" id="resetPassword_form" asp-area="Identity" asp-page="/Account/InitiateResetPassword">
+</form>
