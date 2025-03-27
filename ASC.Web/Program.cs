@@ -10,6 +10,11 @@ using ASC.DataAccess;
 using ASC.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+var connectionString = builder.Configuration.GetConnectionString("ASCWebContextConnection") ?? throw new InvalidOperationException("Connection string 'ASCWebContextConnection' not found."); ;
+
+builder.Services.AddDbContext<ASCWebContext>(options => options.UseSqlServer(connectionString));
+
+//builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<ASCWebContext>();
 
 builder.Services
        .AddConfig(builder.Configuration)
@@ -43,7 +48,6 @@ app.UseRouting();
 
 // Enable session before authorization
 app.UseSession();
-app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
@@ -70,4 +74,5 @@ using (var scope = app.Services.CreateScope())
     var navigationCacheOperations = scope.ServiceProvider.GetRequiredService<INavigationCacheOperations>();
     await navigationCacheOperations.CreateNavigationCacheAsync();
 }
+
 app.Run();
