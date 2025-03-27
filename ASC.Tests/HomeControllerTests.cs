@@ -4,74 +4,75 @@ using ASC.Tests.TestUtilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 using ASC.Utilities;
+
 namespace ASC.Tests
 {
     public class HomeControllerTests
     {
         private readonly Mock<IOptions<ApplicationSettings>> optionsMock;
         private readonly Mock<HttpContext> mockHttpContext;
+        private readonly Mock<ILogger<HomeController>> mockLogger;
+
         public HomeControllerTests()
         {
-            // Create an instance of Mock IOptions
+            // Tạo Mock cho IOptions<ApplicationSettings>
             optionsMock = new Mock<IOptions<ApplicationSettings>>();
-
-            mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(p => p.Session).Returns(new FakeSession());
-            // Set IOptions<> Values property to return ApplicationSettings object
             optionsMock.Setup(ap => ap.Value).Returns(new ApplicationSettings
             {
                 ApplicationTitle = "ASC"
             });
+
+            // Tạo Mock cho ILogger<HomeController>
+            mockLogger = new Mock<ILogger<HomeController>>();
+
+            // Tạo Mock cho HttpContext và Session giả lập
+            mockHttpContext = new Mock<HttpContext>();
+            mockHttpContext.Setup(p => p.Session).Returns(new FakeSession());
         }
+
         [Fact]
         public void HomeController_Index_View_Test()
         {
-            // Home controller instantiated with Mock IOptions<> object
-            var controller = new HomeController(optionsMock.Object);
-
+            // Khởi tạo HomeController với Mock ILogger
+            var controller = new HomeController(mockLogger.Object, optionsMock.Object);
             controller.ControllerContext.HttpContext = mockHttpContext.Object;
 
-            // Assert return ViewResult
-            Assert.IsType(typeof(ViewResult), controller.Index());
-            //Assert.IsType(typeof(JsonResult), controller.Index());
+            // Kiểm tra kiểu trả về là ViewResult
+            Assert.IsType<ViewResult>(controller.Index());
         }
 
         [Fact]
         public void HomeController_Index_NoModel_Test()
         {
-            var controller = new HomeController(optionsMock.Object);
-
+            var controller = new HomeController(mockLogger.Object, optionsMock.Object);
             controller.ControllerContext.HttpContext = mockHttpContext.Object;
 
-            // Assert Model for Null
-            Assert.Null((controller.Index() as ViewResult).ViewData.Model);
+            // Kiểm tra Model là null
+            Assert.Null((controller.Index() as ViewResult)?.ViewData.Model);
         }
 
         [Fact]
         public void HomeController_Index_Validation_Test()
         {
-            var controller = new HomeController(optionsMock.Object);
-
+            var controller = new HomeController(mockLogger.Object, optionsMock.Object);
             controller.ControllerContext.HttpContext = mockHttpContext.Object;
 
-            // Assert ModelState Error Count to 0
-            Assert.Equal(0, (controller.Index() as ViewResult).ViewData.ModelState.ErrorCount);
+            // Kiểm tra số lượng lỗi ModelState = 0
+            Assert.Equal(0, (controller.Index() as ViewResult)?.ViewData.ModelState.ErrorCount);
         }
+
         [Fact]
         public void HomeController_Index_Session_Test()
         {
-            var controller = new HomeController(optionsMock.Object);
+            var controller = new HomeController(mockLogger.Object, optionsMock.Object);
             controller.ControllerContext.HttpContext = mockHttpContext.Object;
             controller.Index();
-            //Session value with key "Test" should not be null.
+
+            // Kiểm tra session không null
             Assert.NotNull(controller.HttpContext.Session.GetSession<ApplicationSettings>("Test"));
         }
     }

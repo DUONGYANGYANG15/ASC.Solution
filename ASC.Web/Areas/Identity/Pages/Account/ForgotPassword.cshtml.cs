@@ -1,11 +1,11 @@
-﻿using Azure.Core;
+﻿using ASC.Solution.Services;
+using ASC.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
-using System;
-using ASC.Solution.Services;
+using System.Threading.Tasks;
 
 namespace ASC.Web.Areas.Identity.Pages.Account
 {
@@ -33,31 +33,31 @@ namespace ASC.Web.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var user = await _userManager.FindByEmailAsync(Input.Email);
-                if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
-                {
-                    // Don't reveal that the user does not exist or is not confirmed
-                    return RedirectToPage("./ForgotPasswordConfirmation");
-                }
+                return Page();
+            }
 
-                // For more information on how to enable account confirmation and password reset please
-                // visit https://go.microsoft.com/fwlink/?LinkID=532713
-                var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var callbackUrl = Url.Page(
-                    "/Account/ResetPassword",
-                    pageHandler: null,
-                    values: new { userId = user.Id, code = code },
-                    protocol: Request.Scheme);
-
-                await _emailSender.SendEmailAsync(Input.Email, "Reset Password",
-                    $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
-
+            var user = await _userManager.FindByEmailAsync(Input.Email);
+            if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+            {
+                // Do not reveal that the user does not exist or is not confirmed
                 return RedirectToPage("./ForgotPasswordConfirmation");
             }
 
-            return Page();
+            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var callbackUrl = Url.Page(
+                "/Account/ResetPassword",
+                pageHandler: null,
+                values: new { userId = user.Id, code },
+                protocol: Request.Scheme);
+
+            await _emailSender.SendEmailAsync(
+                Input.Email,
+                "Reset Password",
+                $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
+
+            return RedirectToPage("./ForgotPasswordConfirmation");
         }
     }
 }
