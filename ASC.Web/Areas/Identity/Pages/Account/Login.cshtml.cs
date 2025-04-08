@@ -19,7 +19,7 @@ namespace ASC.Web.Areas.Identity.Pages.Account
 {
     public class LoginModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<IdentityUser> _UserManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
 
@@ -27,8 +27,9 @@ namespace ASC.Web.Areas.Identity.Pages.Account
         {
             _signInManager = signInManager;
             _logger = logger;
-            _userManager = userManager;
+            _UserManager = userManager;
         }
+
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
@@ -61,18 +62,29 @@ namespace ASC.Web.Areas.Identity.Pages.Account
         /// </summary>
         public class InputModel
         {
+            /// <summary>
+            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+            ///     directly from your code. This API may change or be removed in future releases.
+            /// </summary>
             [Required]
             [EmailAddress]
             public string Email { get; set; }
 
+            /// <summary>
+            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+            ///     directly from your code. This API may change or be removed in future releases.
+            /// </summary>
             [Required]
             [DataType(DataType.Password)]
             public string Password { get; set; }
 
+            /// <summary>
+            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+            ///     directly from your code. This API may change or be removed in future releases.
+            /// </summary>
             [Display(Name = "Remember me?")]
             public bool RememberMe { get; set; }
         }
-
 
         public async Task OnGetAsync(string returnUrl = null)
         {
@@ -93,19 +105,19 @@ namespace ASC.Web.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            //returnUrl = returnUrl ?? Url.Content("~/");
+            // returnUrl = returnUrl ?? Url.Content("~/");
             if (ModelState.IsValid)
             {
-                var user = await _userManager.FindByEmailAsync(Input.Email);
+                var user = await _UserManager.FindByEmailAsync(Input.Email);
                 if (user == null)
                 {
                     ModelState.AddModelError(string.Empty, "Invalid login attempt.");
                     return Page();
                 }
 
-                var list = await _userManager.GetClaimsAsync(user);
+                var list = await _UserManager.GetClaimsAsync(user);
                 var isActive = Boolean.Parse(list.SingleOrDefault(p => p.Type == "IsActive").Value);
-                if (!isActive)
+                if (isActive)
                 {
                     ModelState.AddModelError(string.Empty, "Account has been locked.");
                     return Page();
@@ -116,9 +128,13 @@ namespace ASC.Web.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation(1, "User logged in.");
                     if (!string.IsNullOrWhiteSpace(returnUrl))
+                    {
                         return RedirectToAction(returnUrl);
+                    }
                     else
+                    {
                         return RedirectToAction("Dashboard", "Dashboard", new { Area = "ServiceRequests" });
+                    }
                 }
 
                 if (result.RequiresTwoFactor)

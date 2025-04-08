@@ -6,6 +6,7 @@ using ASC.Solution.Services;
 using ASC.Web.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace ASC.Web.Services
 {
@@ -27,6 +28,13 @@ namespace ASC.Web.Services
             services.AddOptions(); // 10ption
 
             services.Configure<ApplicationSettings>(config.GetSection("AppSettings"));
+            services.AddAuthentication()
+                .AddGoogle(options =>
+                {
+                    IConfigurationSection googleAuthNSection = config.GetSection("Authentication:Google");
+                    options.ClientId = config["Google:Identity:ClientID"];
+                    options.ClientSecret = config["Google:Identity:ClientSecret"];
+                });
 
             return services;
 
