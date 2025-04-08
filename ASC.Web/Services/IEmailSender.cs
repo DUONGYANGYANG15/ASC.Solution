@@ -1,7 +1,12 @@
-﻿namespace ASC.Solution.Services
+﻿using Microsoft.AspNetCore.Identity.UI.Services;
+using System.Threading.Tasks;
+
+public class EmailSender : IEmailSender
 {
-    public interface IEmailSender
+    public Task SendEmailAsync(string email, string subject, string htmlMessage)
     {
-        Task SendEmailAsync(string email, string subject, string message);
+        // Đây chỉ là demo, bạn có thể tích hợp với SMTP, SendGrid, hoặc API Email
+        Console.WriteLine($"Gửi email tới: {email}, Chủ đề: {subject}");
+        return Task.CompletedTask; // Trả về một Task hoàn thành ngay lập tức
     }
 }

@@ -4,6 +4,8 @@ using MimeKit; // Đảm bảo chỉ dùng MimeKit
 using MailKit.Net.Smtp;
 using System.Threading.Tasks;
 using ASC.Web.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace ASC.Solution.Services
 {
