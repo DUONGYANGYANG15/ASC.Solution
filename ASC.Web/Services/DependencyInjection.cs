@@ -77,6 +77,10 @@ namespace ASC.Web.Services
             services.AddDatabaseDeveloperPageExceptionFilter();
 
             services.AddControllersWithViews();
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.Lockout.AllowedForNewUsers = false;
+            });
 
             return services;
         }

@@ -94,7 +94,7 @@ namespace ASC.Web.Areas.Identity.Pages.Account
                 }
 
                 _logger.LogInformation("{Name} logged in with {LoginProvider} provider.", info.Principal.Identity.Name, info.LoginProvider);
-                return RedirectToAction("Dashboard", "Dashboard", new { Area = "ServiceRequestt" });
+                return RedirectToAction("Dashboard", "Dashboard", new { Area = "ServiceRequests" });
             }
 
             if (result.IsLockedOut)
@@ -120,7 +120,7 @@ namespace ASC.Web.Areas.Identity.Pages.Account
                     }
 
                     await _signInManager.SignInAsync(existingUser, isPersistent: false);
-                    return RedirectToAction("Dashboard", "Dashboard", new { Area = "ServiceRequestt" });
+                    return RedirectToAction("Dashboard", "Dashboard", new { Area = "ServiceRequests" });
                 }
 
                 // Nếu liên kết tài khoản thất bại
