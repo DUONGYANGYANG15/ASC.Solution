@@ -30,7 +30,6 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 builder.Services.AddSingleton<IEmailSender, EmailSender>();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline

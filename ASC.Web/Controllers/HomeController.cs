@@ -1,5 +1,5 @@
 ﻿using ASC.Solution.Configuration;
-using ASC.Solution.Models;
+using ASC.Web.Models;
 using ASC.Solution.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;

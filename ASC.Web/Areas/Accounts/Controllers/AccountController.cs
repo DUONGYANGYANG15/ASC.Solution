@@ -1,12 +1,18 @@
-﻿using ASC.Utilities;
-using ASC.Model.BaseTypes;
-using ASC.Solution.Services;
+﻿
 using ASC.Web.Areas.Accounts.Models;
 using ASC.Web.Services;
+using ASC.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
+using ASC.Model.BaseTypes;
+using ASC.Solution.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
+
 namespace ASC.Web.Areas.Accounts.Controllers
 {
     [Authorize]
@@ -28,150 +34,197 @@ namespace ASC.Web.Areas.Accounts.Controllers
         {
             return View();
         }
+
+
+        [HttpGet]
         [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> ServiceEngineers()
         {
-            var serviceEngineers = await _userManager.GetUsersInRoleAsync(Roles.Engineer.ToString());
+            var engineers = await _userManager.GetUsersInRoleAsync(Roles.Engineer.ToString());
 
-            // Lưu tất cả kỹ sư dịch vụ vào session
-            HttpContext.Session.SetSession("ServiceEngineers", serviceEngineers);
-
-            return View(new ServiceEngineerViewModel
+            var model = new ServiceEngineerViewModel
             {
-                ServiceEngineers = serviceEngineers == null ? null : serviceEngineers.ToList(),
-                Registration = new ServiceEngineerRegistrationViewModel() { IsEdit = false }
-            });
+                ServiceEngineers = engineers?.ToList(),
+                Registration = new ServiceEngineerRegistrationViewModel()
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ServiceEngineers(ServiceEngineerViewModel model)
+        {
+            model.ServiceEngineers = (await _userManager.GetUsersInRoleAsync(Roles.Engineer.ToString())).ToList();
+
+            var reg = model.Registration;
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _userManager.FindByEmailAsync(reg.Email);
+
+            if (reg.IsEdit)
+            {
+                // Chỉnh sửa
+                if (user == null)
+                {
+                    ModelState.AddModelError("", "Không tìm thấy người dùng để chỉnh sửa.");
+                    return View(model);
+                }
+
+                user.UserName = reg.UserName;
+                var updateResult = await _userManager.UpdateAsync(user);
+
+                if (!updateResult.Succeeded)
+                {
+                    updateResult.Errors.ToList().ForEach(err => ModelState.AddModelError("", err.Description));
+                    return View(model);
+                }
+
+                if (!string.IsNullOrWhiteSpace(reg.Password))
+                {
+                    var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                    var passResult = await _userManager.ResetPasswordAsync(user, token, reg.Password);
+
+                    if (!passResult.Succeeded)
+                    {
+                        passResult.Errors.ToList().ForEach(err => ModelState.AddModelError("", err.Description));
+                        return View(model);
+                    }
+                }
+
+                var claims = await _userManager.GetClaimsAsync(user);
+                var activeClaim = claims.FirstOrDefault(c => c.Type == "IsActive");
+                if (activeClaim != null)
+                    await _userManager.RemoveClaimAsync(user, activeClaim);
+
+                await _userManager.AddClaimAsync(user, new Claim("IsActive", reg.IsActive.ToString()));
+            }
+            else
+            {
+                // Tạo mới
+                if (user != null)
+                {
+                    ModelState.AddModelError("", "Người dùng đã tồn tại.");
+                    return View(model);
+                }
+
+                user = new IdentityUser
+                {
+                    UserName = reg.UserName,
+                    Email = reg.Email,
+                    EmailConfirmed = true
+                };
+
+                var result = await _userManager.CreateAsync(user, reg.Password);
+                if (!result.Succeeded)
+                {
+                    result.Errors.ToList().ForEach(err => ModelState.AddModelError("", err.Description));
+                    return View(model);
+                }
+
+                await _userManager.AddClaimAsync(user, new Claim(ClaimTypes.Email, reg.Email));
+                await _userManager.AddClaimAsync(user, new Claim("IsActive", reg.IsActive.ToString()));
+                await _userManager.AddToRoleAsync(user, Roles.Engineer.ToString());
+            }
+
+            // Gửi email
+            var subject = reg.IsActive ? "Tài khoản kỹ sư đã được tạo/cập nhật" : "Tài khoản đã bị vô hiệu hóa";
+            var body = reg.IsActive
+                ? $"Tài khoản của bạn đã được tạo hoặc cập nhật.\nEmail: {reg.Email}\nMật khẩu: {reg.Password}"
+                : "Tài khoản của bạn đã bị vô hiệu hóa.";
+
+            await _emailSender.SendEmailAsync(reg.Email, subject, body);
+
+            return RedirectToAction("ServiceEngineer");
         }
         [HttpGet]
         public async Task<IActionResult> Customers()
         {
-            var customers = await _userManager.GetUsersInRoleAsync(Roles.User.ToString());
-            // Hold all service engineers in session
-            HttpContext.Session.SetSession("Customers", customers);
-            return View(new CustomerViewModel
+            var users = await _userManager.GetUsersInRoleAsync("Customer");
+
+            var model = new CustomerViewModel
             {
-                Customers = customers == null ? null : customers.ToList(),
-                Registration = new CustomerRegistrationViewModel() { IsEdit = false }
-            });
+                Customers = users.ToList(),
+                Registration = new CustomerRegistrationViewModel()
+            };
+
+            return View(model);
         }
+
+        // POST: Accounts/Customers/Customers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Customers(CustomerViewModel customer)
         {
-            customer.Customers = HttpContext.Session.GetSession<List<IdentityUser>>("Customers");
+            // Reload danh sách để hiển thị lại nếu có lỗi
+            customer.Customers = (await _userManager.GetUsersInRoleAsync("Customer")).ToList();
+
             if (!ModelState.IsValid)
             {
                 return View(customer);
             }
 
-            if (customer.Registration.IsEdit)
-            {
-                // Update User
+            var reg = customer.Registration;
 
-                // Update claims Inactive
-                var user = await _userManager.FindByEmailAsync(customer.Registration.Email);
-                var identity = await _userManager.GetClaimsAsync(user);
-                var isActiveClaim = identity.SingleOrDefault(p => p.Type == "IsActive");
-                var removeClaimResult = await _userManager.RemoveClaimAsync(user, new System.Security.Claims.Claim(isActiveClaim.Type, isActiveClaim.Value));
-                var addClaimResult = await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(isActiveClaim.Type, customer.Registration.IsActive.ToString()));
-            }
+            if (reg.IsEdit)
+            {
+                var user = await _userManager.FindByEmailAsync(reg.Email);
+                if (user == null)
+                {
+                    ModelState.AddModelError("", "Không tìm thấy người dùng.");
+                    return View(customer);
+                }
 
-            if (customer.Registration.IsActive)
-            {
-                await _emailSender.SendEmailAsync(customer.Registration.Email, "Account Modified", $"Your account has been activated, Email : {customer.Registration.Email}");
-            }
-            else
-            {
-                await _emailSender.SendEmailAsync(customer.Registration.Email, "Account Deactivated", $"Your account has been deactivated.");
+                // Cập nhật claim IsActive
+                var claims = await _userManager.GetClaimsAsync(user);
+                var isActiveClaim = claims.FirstOrDefault(c => c.Type == "IsActive");
+                if (isActiveClaim != null)
+                {
+                    await _userManager.RemoveClaimAsync(user, isActiveClaim);
+                }
+                await _userManager.AddClaimAsync(user, new Claim("IsActive", reg.IsActive.ToString()));
+
+                // Gửi email thông báo
+                var subject = reg.IsActive ? "Tài khoản được kích hoạt" : "Tài khoản bị vô hiệu hóa";
+                var body = reg.IsActive
+                    ? $"Tài khoản của bạn đã được kích hoạt.\nEmail: {reg.Email}"
+                    : "Tài khoản của bạn đã bị vô hiệu hóa.";
+
+                await _emailSender.SendEmailAsync(reg.Email, subject, body);
             }
 
             return RedirectToAction("Customers");
         }
-        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public IActionResult Profile()
+        {
+            var user = HttpContext.User.GetCurrentUserDetails();
+            return View(new ProfileModel() { UserName = user.Name });
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ServiceEngineers(ServiceEngineerViewModel serviceEngineer)
+        public async Task<IActionResult> Profile(ProfileModel profile)
         {
-            serviceEngineer.ServiceEngineers = HttpContext.Session.GetSession<List<IdentityUser>>("ServiceEngineers");
-
             if (!ModelState.IsValid)
             {
-                return View(serviceEngineer);
+                return View();
             }
 
-            if (serviceEngineer.Registration.IsEdit)
+            // Update UserName
+            var user = await _userManager.FindByEmailAsync(HttpContext.User.GetCurrentUserDetails().Email);
+            user.UserName = profile.UserName;
+            IdentityResult result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
             {
-                // Cập nhật người dùng
-                var user = await _userManager.FindByEmailAsync(serviceEngineer.Registration.Email);
-                user.UserName = serviceEngineer.Registration.UserName;
-                IdentityResult result = await _userManager.UpdateAsync(user);
-
-                if (!result.Succeeded)
-                {
-                    result.Errors.ToList().ForEach(p => ModelState.AddModelError("", p.Description));
-                    return View(serviceEngineer);
-                }
-
-                // Cập nhật mật khẩu
-                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                IdentityResult passwordResult = await _userManager.ResetPasswordAsync(user, token, serviceEngineer.Registration.Password);
-                if (!passwordResult.Succeeded)
-                {
-                    passwordResult.Errors.ToList().ForEach(p => ModelState.AddModelError("", p.Description));
-                    return View(serviceEngineer);
-                }
-
-                // Cập nhật claims
-                user = await _userManager.FindByEmailAsync(serviceEngineer.Registration.Email);
-                var identity = await _userManager.GetClaimsAsync(user);
-
-                var isActiveClaim = identity.SingleOrDefault(p => p.Type == "IsActive");
-                var removeClaimResult = await _userManager.RemoveClaimAsync(user, new System.Security.Claims.Claim(isActiveClaim.Type, isActiveClaim.Value));
-
-                var addClaimResult = await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(isActiveClaim.Type, serviceEngineer.Registration.IsActive.ToString()));
+                result.Errors.ToList().ForEach(p => ModelState.AddModelError("", p.Description));
+                return View();
             }
-            else
-            {
-                // Tạo người dùng mới
-                IdentityUser user = new IdentityUser
-                {
-                    UserName = serviceEngineer.Registration.UserName,
-                    Email = serviceEngineer.Registration.Email,
-                    EmailConfirmed = true
-                };
-
-                IdentityResult result = await _userManager.CreateAsync(user, serviceEngineer.Registration.Password);
-
-                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress", serviceEngineer.Registration.Email));
-                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("IsActive", serviceEngineer.Registration.IsActive.ToString()));
-
-                if (!result.Succeeded)
-                {
-                    result.Errors.ToList().ForEach(p => ModelState.AddModelError("", p.Description));
-                    return View(serviceEngineer);
-                }
-
-                // Gán vai trò Engineer cho người dùng
-                var roleResult = await _userManager.AddToRoleAsync(user, Roles.Engineer.ToString());
-
-                if (!roleResult.Succeeded)
-                {
-                    roleResult.Errors.ToList().ForEach(p => ModelState.AddModelError("", p.Description));
-                    return View(serviceEngineer);
-                }
-            }
-
-            if (serviceEngineer.Registration.IsActive)
-            {
-                await _emailSender.SendEmailAsync(serviceEngineer.Registration.Email, "Account Created/Modified", $"Email: {serviceEngineer.Registration.Email} / Password: {serviceEngineer.Registration.Password}");
-            }
-            else
-            {
-                await _emailSender.SendEmailAsync(serviceEngineer.Registration.Email, "Account Deactivated", "Your account has been deactivated.");
-            }
-
-            return RedirectToAction("ServiceEngineers");
+            await _signInManager.RefreshSignInAsync(user);
+            return RedirectToAction("Dashboard", "Dashboard", new { area = "ServiceRequests" });
         }
     }
 }

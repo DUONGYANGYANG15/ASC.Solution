@@ -11,7 +11,9 @@
 
 @{
     Layout = "_MasterLayout";
-    var currentUser = UserHttpContext.HttpContext.User.GetCurrentUserDetails();
+    var currentUser = User?.Identity?.IsAuthenticated == true 
+        ? User.GetCurrentUserDetails() 
+        : null;
 }
 
 <header class="secureLayout">

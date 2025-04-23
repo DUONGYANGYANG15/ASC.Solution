@@ -7,6 +7,8 @@ using ASC.Web.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using ASC.Business.Interfaces;
+using ASC.Business;
 
 namespace ASC.Web.Services
 {
@@ -81,7 +83,8 @@ namespace ASC.Web.Services
             {
                 options.Lockout.AllowedForNewUsers = false;
             });
-
+            services.AddScoped<IMasterDataOperations, MasterDataOperations>();
+            services.AddAutoMapper(typeof(ApplicationDbContext));
             return services;
         }
     }

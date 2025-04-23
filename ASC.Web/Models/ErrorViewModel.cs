@@ -1,4 +1,4 @@
-namespace ASC.Solution.Models
+namespace ASC.Web.Models
 {
     public class ErrorViewModel
     {
