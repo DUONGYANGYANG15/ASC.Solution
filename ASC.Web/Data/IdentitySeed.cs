@@ -2,9 +2,6 @@
 using ASC.Solution.Configuration;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ASC.Web.Data
 {
@@ -13,78 +10,97 @@ namespace ASC.Web.Data
         public async Task Seed(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager,
             IOptions<ApplicationSettings> options)
         {
-            // Kiểm tra options không null
-            if (options?.Value == null)
-            {
-                throw new ArgumentNullException(nameof(options), "ApplicationSettings cannot be null.");
-            }
+            var roles = options.Value.Roles.Split(new char[] { ',' });
 
-            var roles = options.Value.Roles?.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
-
-            // Tạo roles nếu chưa có
+            // Create roles if they don't exist
             foreach (var role in roles)
             {
                 try
                 {
-                    if (!await roleManager.RoleExistsAsync(role))
+                    if (!roleManager.RoleExistsAsync(role).Result)
                     {
                         IdentityRole storageRole = new IdentityRole
                         {
                             Name = role
                         };
-
                         IdentityResult roleResult = await roleManager.CreateAsync(storageRole);
-                        if (!roleResult.Succeeded)
-                        {
-                            Console.WriteLine($"Failed to create role '{role}': {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
-                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error creating role '{role}': {ex.Message}");
+                    Console.WriteLine(ex);
+                }
+            }
+            // ... (Your existing code for role creation) ...
+
+            // Create admin if he doesn't exist
+            var admin = await userManager.FindByEmailAsync(options.Value.AdminEmail);
+            if (admin == null)
+            {
+                IdentityUser user = new IdentityUser
+                {
+                    UserName = options.Value.AdminName,
+                    Email = options.Value.AdminEmail,
+                    EmailConfirmed = true
+                };
+
+                // Await the result of user creation
+                IdentityResult result = await userManager.CreateAsync(user, options.Value.AdminPassword);
+
+                // Add claims only if user creation is successful
+                if (result.Succeeded)
+                {
+
+                    await userManager.AddClaimAsync(user, new System.Security.Claims.Claim("https://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress", options.Value.AdminEmail));
+                    await userManager.AddClaimAsync(user, new System.Security.Claims.Claim("IsActive", "True"));
+
+                    // Add Admin to Admin roles
+                    await userManager.AddToRoleAsync(user, Roles.Admin.ToString());
+                }
+                else
+                {
+                    // Handle user creation failure (e.g., log the error)
+                    foreach (var error in result.Errors)
+                    {
+                        Console.WriteLine($"Error creating user: {error.Description}");
+                    }
                 }
             }
 
-            // Tạo Admin
-            await CreateUser(userManager, options.Value.AdminEmail, options.Value.AdminName, options.Value.AdminPassword, Roles.Admin.ToString());
-
-            // Tạo Engineer
-            await CreateUser(userManager, options.Value.EngineerEmail, options.Value.EngineerName, options.Value.EngineerPassword, Roles.Engineer.ToString());
-        }
-
-        private async Task CreateUser(UserManager<IdentityUser> userManager, string email, string userName, string password, string role)
-        {
-            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password))
+            var engineer = await userManager.FindByEmailAsync(options.Value.EngineerEmail);
+            if (engineer == null)
             {
-                Console.WriteLine($"Skipping user creation: Missing required fields for {role}");
-                return;
-            }
-
-            var user = await userManager.FindByEmailAsync(email);
-            if (user == null)
-            {
-                IdentityUser newUser = new IdentityUser
+                IdentityUser user = new IdentityUser
                 {
-                    UserName = userName,
-                    Email = email,
+                    UserName = options.Value.EngineerName,
+                    Email = options.Value.EngineerEmail,
                     EmailConfirmed = true,
                     LockoutEnabled = false
                 };
 
-                IdentityResult result = await userManager.CreateAsync(newUser, password);
+                // Await the result of user creation
+                IdentityResult result = await userManager.CreateAsync(user, options.Value.EngineerPassword);
 
+                // Add claims only if user creation is successful
                 if (result.Succeeded)
                 {
-                    await userManager.AddClaimAsync(newUser, new System.Security.Claims.Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress", email));
-                    await userManager.AddClaimAsync(newUser, new System.Security.Claims.Claim("IsActive", "True"));
-                    await userManager.AddToRoleAsync(newUser, role);
+
+                    await userManager.AddClaimAsync(user, new System.Security.Claims.Claim("https://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress", options.Value.EngineerEmail));
+                    await userManager.AddClaimAsync(user, new System.Security.Claims.Claim("IsActive", "True"));
+
+                    // Add Admin to Admin roles
+                    await userManager.AddToRoleAsync(user, Roles.Engineer.ToString());
                 }
                 else
                 {
-                    Console.WriteLine($"Failed to create user {email}: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                    // Handle user creation failure (e.g., log the error)
+                    foreach (var error in result.Errors)
+                    {
+                        Console.WriteLine($"Error creating user: {error.Description}");
+                    }
                 }
             }
+
         }
     }
 }

@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Linq;
 using ASC.Model.BaseTypes;
 using ASC.Solution.Services;
-using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace ASC.Web.Areas.Accounts.Controllers
 {
@@ -198,6 +197,7 @@ namespace ASC.Web.Areas.Accounts.Controllers
 
             return RedirectToAction("Customers");
         }
+
         [HttpGet]
         public IActionResult Profile()
         {

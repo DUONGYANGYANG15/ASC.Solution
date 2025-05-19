@@ -1,7 +1,7 @@
-﻿using ASC.Web.Services;
+﻿using ASC.Solution.Services;
+using ASC.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
@@ -137,7 +137,6 @@ namespace ASC.Web.Areas.Identity.Pages.Account
             Input = new InputModel { Email = email }; // hỗ trợ bind email sẵn
             return Page(); // Trả về trang Register.cshtml để nhập email và đăng ký
         }
-
 
         public async Task<IActionResult> OnPostConfirmationAsync(string returnUrl = null)
         {

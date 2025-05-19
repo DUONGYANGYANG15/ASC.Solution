@@ -1,4 +1,5 @@
-﻿using ASC.Model.Models;
+﻿using ASC.Model.BaseTypes;
+using ASC.Model.Models;
 using AutoMapper;
 
 namespace ASC.Web.Areas.Configuration.Models

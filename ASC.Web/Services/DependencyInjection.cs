@@ -6,9 +6,9 @@ using ASC.Solution.Services;
 using ASC.Web.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using ASC.Business.Interfaces;
 using ASC.Business;
+
 
 namespace ASC.Web.Services
 {
@@ -30,13 +30,22 @@ namespace ASC.Web.Services
             services.AddOptions(); // 10ption
 
             services.Configure<ApplicationSettings>(config.GetSection("AppSettings"));
+
+            // Using a Gmail Authentication Provider for Customer Authentication
             services.AddAuthentication()
                 .AddGoogle(options =>
                 {
                     IConfigurationSection googleAuthNSection = config.GetSection("Authentication:Google");
-                    options.ClientId = config["Google:Identity:ClientID"];
+                    options.ClientId = config["Google:Identity:ClientId"];
                     options.ClientSecret = config["Google:Identity:ClientSecret"];
                 });
+            //services.AddDistributedMemoryCache();
+            services.AddStackExchangeRedisCache(options =>
+            {
+                var redisConfig = config.GetSection("CacheSettings");
+                options.Configuration = redisConfig["CacheConnectionString"];
+                options.InstanceName = redisConfig["CacheInstance"];
+            });
 
             return services;
 
@@ -44,7 +53,7 @@ namespace ASC.Web.Services
 
         //Add service
 
-        public static IServiceCollection AddMyDependencyGroup(this IServiceCollection services)
+        public static IServiceCollection AddMyDependencyGroup(this IServiceCollection services, ConfigurationManager configuration)
         {
 
             //Add ApplicationDbContext
@@ -73,16 +82,22 @@ namespace ASC.Web.Services
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddDistributedMemoryCache();
             services.AddSingleton<INavigationCacheOperations, NavigationCacheOperations>();
+            services.AddScoped<IMasterDataCacheOperations, MasterDataCacheOperations>();
+            services.AddScoped<IServiceRequestOperations, ServiceRequestOperations>();
+
             //Add RazorPages, MVC
 
-            services.AddRazorPages();
+            // services.AddRazorPages();
+            services.AddRazorPages()
+     .AddMvcOptions(options => { })
+     .AddCookieTempDataProvider(); // ✅ Bắt buộc
             services.AddDatabaseDeveloperPageExceptionFilter();
 
-            services.AddControllersWithViews();
-            services.Configure<IdentityOptions>(options =>
-            {
-                options.Lockout.AllowedForNewUsers = false;
+            services.AddControllersWithViews().AddJsonOptions(options => {
+                options.JsonSerializerOptions.PropertyNamingPolicy = null;
+                options.JsonSerializerOptions.DictionaryKeyPolicy = null;
             });
+            //Add MasterDataOperations
             services.AddScoped<IMasterDataOperations, MasterDataOperations>();
             services.AddAutoMapper(typeof(ApplicationDbContext));
             return services;
