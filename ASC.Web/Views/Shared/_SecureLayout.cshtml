@@ -1,4 +1,4 @@
-﻿﻿@using ASC.Utilities
+﻿@using ASC.Utilities
 @using ASC.Web.Data
 @using Microsoft.Extensions.Options;
 @using ASC.Solution.Configuration;
@@ -11,9 +11,7 @@
 
 @{
     Layout = "_MasterLayout";
-    var currentUser = User?.Identity?.IsAuthenticated == true 
-        ? User.GetCurrentUserDetails() 
-        : null;
+    var currentUser = UserHttpContext.HttpContext.User.GetCurrentUserDetails();
 }
 
 <header class="secureLayout">
@@ -31,7 +29,7 @@
         <li>
             <div class="user-view">
                 <div class="background blue-grey lighten-1"></div>
-                <a href="#!user"><img class="circle" src="~/images/background3.jpg"></a>
+                <a href="#!user"><img class="circle" src="~/images/logo.png"></a>
                 <a href="#!name"><span class="white-text name">@currentUser.Name</span></a>
                 <a href="#!email"><span class="white-text email">@currentUser.Email</span></a>
             </div>
@@ -111,3 +109,5 @@
         });
     </script>
 }
+
+//RenderSection("Scripts", required: false)

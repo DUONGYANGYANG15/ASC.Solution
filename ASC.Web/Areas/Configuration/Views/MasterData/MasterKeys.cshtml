@@ -67,23 +67,25 @@
 
         <form asp-controller="MasterData" asp-action="MasterKeys" method="post" id="formMasterKey">
             @Html.AntiForgeryToken()
-            <input type="hidden" asp-for="IsEdit" id="IsEdit" />
-            <input type="hidden" asp-for="MasterKeyInContext.PartitionKey" id="MasterKeyInContext_PartitionKey" />
+            <input type="hidden" asp-for="IsEdit" />
+            <input type="hidden" asp-for="MasterKeyInContext.PartitionKey" />
+            <input type="hidden" asp-for="MasterKeyInContext.RowKey" />
 
             <div class="row">
                 <div class="input-field col s4">
-                    <input asp-for="MasterKeyInContext.RowKey" id="MasterKeyInContext_RowKey" disabled />
-                    <label for="MasterKeyInContext_RowKey">Row Key</label>
+                    <input asp-for="MasterKeyInContext.RowKey" id="Input_MasterKey_RowKey" disabled />
+                    <label asp-for="MasterKeyInContext.RowKey"></label>
                 </div>
+            
                 <div class="input-field col s4">
-                    <input asp-for="MasterKeyInContext.Name" id="MasterKeyInContext_Name" class="validate" />
-                    <label for="MasterKeyInContext_Name">Name</label>
+                    <input asp-for="MasterKeyInContext.Name"  class="validate" />
+                    <label asp-for="MasterKeyInContext.Name"></label>
                 </div>
                 <div class="input-field col s4">
                     <div class="switch">
                         <label>
                             InActive
-                            <input asp-for="MasterKeyInContext.IsActive" id="MasterKeyInContext_IsActive" type="checkbox" />
+                            <input asp-for="MasterKeyInContext.IsActive" class="validate" />
                             <span class="lever"></span>
                             Active
                         </label>

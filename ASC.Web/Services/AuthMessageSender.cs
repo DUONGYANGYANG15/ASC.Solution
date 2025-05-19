@@ -1,13 +1,11 @@
 ﻿using ASC.Solution.Configuration;
+using ASC.Solution.Services;
 using Microsoft.Extensions.Options;
-using MimeKit; // Đảm bảo chỉ dùng MimeKit
+using MimeKit;
 using MailKit.Net.Smtp;
 using System.Threading.Tasks;
-using ASC.Web.Services;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 
-namespace ASC.Solution.Services
+namespace ASC.Web.Services
 {
     public class AuthMessageSender : IEmailSender, ISmsSender
     {
@@ -20,16 +18,15 @@ namespace ASC.Solution.Services
 
         public async Task SendEmailAsync(string email, string subject, string message)
         {
-            var emailMessage = new MimeKit.MimeMessage(); // Sử dụng namespace rõ ràng
-            emailMessage.From.Add(new MimeKit.MailboxAddress("Admin", _settings.Value.SMTPAccount));
-            emailMessage.To.Add(new MimeKit.MailboxAddress(email, email)); // Đảm bảo truyền đủ tham số
-
+            var emailMessage = new MimeMessage();
+            emailMessage.From.Add(new MailboxAddress("admin", _settings.Value.SMTPAccount));
+            emailMessage.To.Add(new MailboxAddress("user", email));
             emailMessage.Subject = subject;
-            emailMessage.Body = new MimeKit.TextPart("plain") { Text = message };
+            emailMessage.Body = new TextPart("plain") { Text = message };
 
-            using (var client = new MailKit.Net.Smtp.SmtpClient()) // Chỉ rõ MailKit
+            using (var client = new SmtpClient())
             {
-                await client.ConnectAsync(_settings.Value.SMTPServer, _settings.Value.SMTPPort, MailKit.Security.SecureSocketOptions.StartTls);
+                await client.ConnectAsync(_settings.Value.SMTPServer, _settings.Value.SMTPPort, false);
                 await client.AuthenticateAsync(_settings.Value.SMTPAccount, _settings.Value.SMTPPassword);
                 await client.SendAsync(emailMessage);
                 await client.DisconnectAsync(true);
@@ -38,6 +35,8 @@ namespace ASC.Solution.Services
 
         public Task SendSmsAsync(string number, string message)
         {
+            // Hiện tại chưa triển khai gửi SMS.
+            // Nếu cần triển khai, bạn có thể tích hợp API SMS ở đây.
             return Task.CompletedTask;
         }
     }

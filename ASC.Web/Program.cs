@@ -8,18 +8,23 @@ using Microsoft.Extensions.Options;
 using ASC.DataAccess.Interfaces;
 using ASC.DataAccess;
 using ASC.Web.Services;
-using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("ASCWebContextConnection") ?? throw new InvalidOperationException("Connection string 'ASCWebContextConnection' not found."); ;
 
-builder.Services.AddDbContext<ASCWebContext>(options => options.UseSqlServer(connectionString));
+//builder.Services.AddDbContext<ASCWebContext>(options => options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString)
+);
+
 
 //builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<ASCWebContext>();
 
 builder.Services
        .AddConfig(builder.Configuration)
-       .AddMyDependencyGroup();
+       .AddMyDependencyGroup(builder.Configuration);
 
 // Add services for session and caching
 builder.Services.AddDistributedMemoryCache();
@@ -29,7 +34,7 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
-builder.Services.AddSingleton<IEmailSender, EmailSender>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
@@ -75,5 +80,9 @@ using (var scope = app.Services.CreateScope())
     var navigationCacheOperations = scope.ServiceProvider.GetRequiredService<INavigationCacheOperations>();
     await navigationCacheOperations.CreateNavigationCacheAsync();
 }
-
+using (var scope = app.Services.CreateScope())
+{
+    var navigationCacheOperations = scope.ServiceProvider.GetRequiredService<IMasterDataCacheOperations>();
+    await navigationCacheOperations.CreateMasterDataCacheAsync();
+}
 app.Run();
